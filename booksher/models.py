@@ -8,13 +8,11 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-
 class City(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
-
 
 class Book(models.Model):
 
@@ -33,6 +31,9 @@ class Book(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     is_free = models.BooleanField(default=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True,blank=True)
+    condition = models.CharField(max_length=20,choices=CONDITION_CHOICES,default='good')
+    is_exchanged = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -48,11 +49,30 @@ class Trade(models.Model):
     )
 
     book = models.CharField(max_length=20)
-    getter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    getter = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='received_trades')
     treade_at = models.DateTimeField(auto_now=True)
     start_data = models.DateTimeField()
     finish = models.CharField(max_length=50)
     status = models.CharField(max_length=50, choices=STATUS)
+    requested_book = models.ForeignKey(Book,on_delete=models.CASCADE, related_name='requested_trades',null=True,blank=True)
+    offered_book = models.ForeignKey(Book,on_delete=models.CASCADE, related_name='offered_trades',null=True,blank=True)
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, related_name='sent_trades',null=True, blank=True)
+    message = models.TextField(blank=True)
 
     def __str__(self):
         return self.status
+
+
+class Review(models.Model):
+    trade = models.ForeignKey(Trade,on_delete=models.CASCADE,)
+    reviewer = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='given_reviews')
+    reviewed_user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='received_reviews')
+    rating = models.PositiveSmallIntegerField()
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('trade', 'reviewer')
+
+    def __str__(self):
+        return f'{self.reviewer} - {self.rating}'

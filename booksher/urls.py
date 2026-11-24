@@ -7,4 +7,8 @@ urlpatterns = [
     path('books/<int:pk>/', BookDetailView.as_view()),
     path('trades/', TradeListCreateView.as_view()),
     path('trades/<int:pk>/', TradeDetailView.as_view()),
+    path('my-books/', MyBooksView.as_view()),
+    path('reviews/', ReviewListCreateView.as_view()),
+    path('trades/<int:pk>/accept/', accept_trade),
+    path('trades/<int:pk>/reject/', reject_trade),
 ]
